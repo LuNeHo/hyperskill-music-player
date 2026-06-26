@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/mainMenuAddPlaylist"
+        android:title="@string/menu_item_add_playlist" />
+
+    <item
+        android:id="@+id/mainMenuLoadPlaylist"
+        android:title="@string/menu_item_load_playlist" />
+
+    <item
+        android:id="@+id/mainMenuDeletePlaylist"
+        android:title="@string/menu_item_delete_playlist" />
+</menu>

@@ -38,7 +38,6 @@ google-services.json
 course-info.yaml
 Music Player/*
 !Music Player/task/
-Music Player/task/src/main/res
 
 # Other
 .DS_Store
