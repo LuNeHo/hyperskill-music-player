@@ -3,7 +3,7 @@ package org.hyperskill.musicplayer.internals
 import android.widget.Button
 import androidx.fragment.app.FragmentContainerView
 import androidx.recyclerview.widget.RecyclerView
-import org.hyperskill.musicplayer.MainActivity
+import org.hyperskill.musicplayer.presentation.view.MainActivity
 import org.junit.Assert
 
 // version 2.0

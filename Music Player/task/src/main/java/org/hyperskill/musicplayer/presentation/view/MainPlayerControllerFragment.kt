@@ -1,10 +1,11 @@
-package org.hyperskill.musicplayer
+package org.hyperskill.musicplayer.presentation.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import org.hyperskill.musicplayer.R
 import org.hyperskill.musicplayer.databinding.FragmentMainPlayerControllerBinding
 
 class MainPlayerControllerFragment : Fragment() {

@@ -5,7 +5,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
-import org.hyperskill.musicplayer.MainActivity
+import org.hyperskill.musicplayer.presentation.view.MainActivity
 import org.junit.Assert.assertEquals
 
 // version 2.0

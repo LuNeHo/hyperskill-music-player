@@ -11,4 +11,5 @@
     <string name="menu_item_delete_playlist">Delete Playlist</string>
     <string name="dialog_load_playlist_title">choose playlist to load</string>
     <string name="dialog_delete_playlist_title">choose playlist to delete</string>
+    <string name="add_playlist_et_hint">Playlist Name</string>
 </resources>

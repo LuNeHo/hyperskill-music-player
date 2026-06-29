@@ -7,7 +7,7 @@ sealed interface Song {
         val title: String,
         val artist: String,
         val duration: Long,
-        var state: TrackState = TrackState.STOPPED
+        val state: TrackState = TrackState.STOPPED
     ) : Song
 
     data class SongSelector(
@@ -15,7 +15,7 @@ sealed interface Song {
         val title: String,
         val artist: String,
         val duration: Long,
-        var isSelected: Boolean = false
+        val isSelected: Boolean = false
     ) : Song
 }
 
