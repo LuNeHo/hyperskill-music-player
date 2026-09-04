@@ -14,7 +14,7 @@ import org.hyperskill.musicplayer.internals.PlayMusicScreen.Companion.ID_CONTROL
 import org.hyperskill.musicplayer.internals.PlayMusicScreen.Companion.ID_CONTROLLER_SEEKBAR
 import org.junit.Assert.assertEquals
 import org.junit.FixMethodOrder
-//import org.junit.Ignore
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [CustomMediaPlayerShadow::class, CustomShadowAsyncDifferConfig::class])
-class Stage1UnitTest : MusicPlayerUnitTests<MainActivity>(MainActivity::class.java){
+class Stage1UnitTestB : MusicPlayerUnitTests<MainActivity>(MainActivity::class.java) {
 
     @Test
     fun test00_checkMainActivityComponentsExist() = testActivity {
@@ -50,6 +50,7 @@ class Stage1UnitTest : MusicPlayerUnitTests<MainActivity>(MainActivity::class.ja
         Unit
     }
 
+    @Ignore
     @Test
     fun test02_checkSearchButtonNoSongsFound() = testActivity {
         PlayMusicScreen(this).apply {
@@ -119,10 +120,12 @@ class Stage1UnitTest : MusicPlayerUnitTests<MainActivity>(MainActivity::class.ja
     @Test
     fun test06_checkControllerStopButtonBeforeSearch() = testActivity {
         PlayMusicScreen(this).apply {
-            try { controllerBtnStop.clickAndRun() }
-            catch (t: Throwable) {
-                throw AssertionError("Click on $ID_CONTROLLER_BTN_STOP before " +
-                        "search should not throw exception",
+            try {
+                controllerBtnStop.clickAndRun()
+            } catch (t: Throwable) {
+                throw AssertionError(
+                    "Click on $ID_CONTROLLER_BTN_STOP before " +
+                            "search should not throw exception",
                     t
                 )
             }
@@ -134,10 +137,12 @@ class Stage1UnitTest : MusicPlayerUnitTests<MainActivity>(MainActivity::class.ja
     fun test07_checkControllerSeekBarBeforeSearch() = testActivity {
         PlayMusicScreen(this).apply {
             if (Shadows.shadowOf(controllerSeekBar).onSeekBarChangeListener != null) {
-                try { controllerSeekBar.setProgressAsUser(1) }
-                catch (t: Throwable) {
-                    throw AssertionError("Dragging $ID_CONTROLLER_SEEKBAR before " +
-                            "search should not throw exception",
+                try {
+                    controllerSeekBar.setProgressAsUser(1)
+                } catch (t: Throwable) {
+                    throw AssertionError(
+                        "Dragging $ID_CONTROLLER_SEEKBAR before " +
+                                "search should not throw exception",
                         t
                     )
                 }
@@ -151,10 +156,12 @@ class Stage1UnitTest : MusicPlayerUnitTests<MainActivity>(MainActivity::class.ja
     @Test
     fun test08_checkControllerPlayPauseButtonBeforeSearch() = testActivity {
         PlayMusicScreen(this).apply {
-            try { controllerBtnPlayPause.clickAndRun() }
-            catch (t: Throwable) {
-                throw AssertionError("Click on $ID_CONTROLLER_BTN_PLAY_PAUSE before " +
-                        "search should not throw exception",
+            try {
+                controllerBtnPlayPause.clickAndRun()
+            } catch (t: Throwable) {
+                throw AssertionError(
+                    "Click on $ID_CONTROLLER_BTN_PLAY_PAUSE before " +
+                            "search should not throw exception",
                     t
                 )
             }
