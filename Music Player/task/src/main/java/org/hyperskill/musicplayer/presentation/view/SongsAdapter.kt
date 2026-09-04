@@ -13,16 +13,22 @@ import org.hyperskill.musicplayer.model.Song
 import org.hyperskill.musicplayer.model.Song.SongSelector
 import org.hyperskill.musicplayer.model.Song.Track
 import org.hyperskill.musicplayer.model.TrackState
+import java.text.SimpleDateFormat
 import java.util.EnumSet
+import java.util.Locale
 
 class SongsAdapter(val itemSongListener: OnSongInteraction) :
     ListAdapter<Song, RecyclerView.ViewHolder>(DiffCallback) {
+    private val format = SimpleDateFormat("mm:ss", Locale.getDefault())
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
 
         return when (viewType) {
-            TRACK -> TrackViewHolder(ListItemSongBinding.inflate(layoutInflater))
-            SELECTOR -> SongSelectorViewHolder(ListItemSongSelectorBinding.inflate(layoutInflater))
+            TRACK -> TrackViewHolder(ListItemSongBinding.inflate(layoutInflater, parent, false))
+            SELECTOR -> SongSelectorViewHolder(
+                ListItemSongSelectorBinding.inflate(layoutInflater, parent, false)
+            )
+
             else -> throw AssertionError()
         }
     }
@@ -89,7 +95,7 @@ class SongsAdapter(val itemSongListener: OnSongInteraction) :
             binding.apply {
                 songItemTvArtist.text = song.artist
                 songItemTvTitle.text = song.title
-//                songItemTvDuration.text = format.format(song.duration)
+                songItemTvDuration.text = format.format(song.duration)
             }
         }
 
@@ -114,7 +120,7 @@ class SongsAdapter(val itemSongListener: OnSongInteraction) :
             binding.apply {
                 songSelectorItemTvArtist.text = song.artist
                 songSelectorItemTvTitle.text = song.title
-//                songSelectorItemTvDuration.text = format.format(song.duration)
+                songSelectorItemTvDuration.text = format.format(song.duration)
             }
         }
 

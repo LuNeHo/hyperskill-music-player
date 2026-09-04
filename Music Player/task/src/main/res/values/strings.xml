@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">Music Player</string>
     <string name="main_btn_search">search</string>
-    <string name="search_error_no_songs_found">no songs found</string>
-    <string name="search_error_no_songs_loaded">no songs loaded, click search to load songs</string>
     <string name="player_controller_init_time">00:00</string>
     <string name="controller_btn_play_pause">play/pause</string>
     <string name="controller_btn_stop">stop</string>
@@ -12,4 +10,10 @@
     <string name="dialog_load_playlist_title">choose playlist to load</string>
     <string name="dialog_delete_playlist_title">choose playlist to delete</string>
     <string name="add_playlist_et_hint">Playlist Name</string>
+    <string name="add_playlist_error_no_song_selected">Add at least one song to your playlist</string>
+    <string name="add_playlist_error_no_name">Add a name to your playlist</string>
+    <string name="add_playlist_error_all_songs_name">All Songs is a reserved name choose another playlist name</string>
+    <string name="search_error_no_songs_found">no songs found</string>
+    <string name="search_error_no_songs_loaded">no songs loaded, click search to load songs</string>
+    <string name="todo">TODO</string>
 </resources>
