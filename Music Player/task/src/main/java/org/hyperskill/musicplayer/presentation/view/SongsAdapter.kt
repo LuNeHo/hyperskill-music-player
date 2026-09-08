@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import org.hyperskill.musicplayer.R
 import org.hyperskill.musicplayer.databinding.ListItemSongBinding
 import org.hyperskill.musicplayer.databinding.ListItemSongSelectorBinding
-import org.hyperskill.musicplayer.model.Song
-import org.hyperskill.musicplayer.model.Song.SongSelector
-import org.hyperskill.musicplayer.model.Song.Track
-import org.hyperskill.musicplayer.model.TrackState
+import org.hyperskill.musicplayer.domain.model.Song
+import org.hyperskill.musicplayer.domain.model.Song.SongSelector
+import org.hyperskill.musicplayer.domain.model.Song.Track
+import org.hyperskill.musicplayer.domain.model.TrackState
 import java.text.SimpleDateFormat
 import java.util.EnumSet
 import java.util.Locale

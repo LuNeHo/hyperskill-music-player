@@ -1,18 +1,27 @@
 package org.hyperskill.musicplayer.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.hyperskill.musicplayer.model.Playlist
-import org.hyperskill.musicplayer.model.Song.SongSelector
-import org.hyperskill.musicplayer.model.Song.Track
-import org.hyperskill.musicplayer.model.TrackState
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.hyperskill.musicplayer.domain.AudioPlayerDataSource
+import org.hyperskill.musicplayer.domain.model.Playlist
+import org.hyperskill.musicplayer.domain.model.Song.SongSelector
+import org.hyperskill.musicplayer.domain.model.Song.Track
+import org.hyperskill.musicplayer.domain.model.TrackState
 
-class MusicPlayerViewModel : ViewModel() {
+class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : ViewModel() {
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
+
     private var currentPlaylistName = ""
+    private var progressJob: Job? = null
 
     fun handleIntent(intent: UserIntent) {
         when (intent) {
@@ -104,6 +113,8 @@ class MusicPlayerViewModel : ViewModel() {
             }
             val newCurrentTrack = newTracks.find { it.id == currentTrack.id }
             updateState { copy(currentPlaylist = Playlist(newTracks, newCurrentTrack)) }
+            audioPlayer.play()
+            startProgressTracker()
         }
     }
 
@@ -114,6 +125,8 @@ class MusicPlayerViewModel : ViewModel() {
             }
             val newCurrentTrack = newTracks.find { it.id == currentTrack.id }
             updateState { copy(currentPlaylist = Playlist(newTracks, newCurrentTrack)) }
+            audioPlayer.stop()
+            updateState { copy(currentSongProgress = audioPlayer.getCurrentPosition()) }
         }
     }
 
@@ -129,6 +142,21 @@ class MusicPlayerViewModel : ViewModel() {
         }
         val newCurrentTrack = newTracks.find { it.id == selectedTrack.id }
         updateState { copy(currentPlaylist = Playlist(newTracks, newCurrentTrack)) }
+        updateState { copy(currentSongProgress = 0) }
+        audioPlayer.play()
+        startProgressTracker()
+    }
+
+    private fun startProgressTracker() {
+        // In case a track is already playing
+        progressJob?.cancel()
+
+        progressJob = viewModelScope.launch {
+            while (isActive && audioPlayer.isPlaying()) {
+                updateState { copy(currentSongProgress = audioPlayer.getCurrentPosition()) }
+                delay(500)
+            }
+        }
     }
 
     private fun enableSelectionMode() {
@@ -227,5 +255,16 @@ class MusicPlayerViewModel : ViewModel() {
 
     companion object {
         const val ALL_SONGS = "All Songs"
+    }
+}
+
+class MusicPlayerViewModelFactory(private val audioPlayer: AudioPlayerDataSource) :
+    ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MusicPlayerViewModel::class.java)) {
+            return MusicPlayerViewModel(audioPlayer) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel")
     }
 }

@@ -1,4 +1,4 @@
-package org.hyperskill.musicplayer.model
+package org.hyperskill.musicplayer.domain.model
 
 sealed interface Song {
     data class Track(

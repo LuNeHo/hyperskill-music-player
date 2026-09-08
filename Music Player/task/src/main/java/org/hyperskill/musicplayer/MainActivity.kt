@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.hyperskill.musicplayer.databinding.ActivityMainBinding
 import org.hyperskill.musicplayer.presentation.MusicPlayerViewModel
 import org.hyperskill.musicplayer.presentation.MusicPlayerViewModel.Companion.ALL_SONGS
+import org.hyperskill.musicplayer.presentation.MusicPlayerViewModelFactory
 import org.hyperskill.musicplayer.presentation.ToastMessage
 import org.hyperskill.musicplayer.presentation.UiEvent
 import org.hyperskill.musicplayer.presentation.UiState
@@ -25,7 +26,10 @@ import org.hyperskill.musicplayer.presentation.view.SongsAdapter
 
 class MainActivity : AppCompatActivity(), SongsAdapter.OnSongInteraction {
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MusicPlayerViewModel by viewModels()
+    private val viewModel: MusicPlayerViewModel by viewModels {
+        val app = application as MusicPlayerApplication
+        MusicPlayerViewModelFactory(app.audioPlayerDataSource)
+    }
     private val songsAdapter = SongsAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {

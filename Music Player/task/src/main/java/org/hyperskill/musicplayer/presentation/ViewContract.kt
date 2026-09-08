@@ -1,13 +1,14 @@
 package org.hyperskill.musicplayer.presentation
 
-import org.hyperskill.musicplayer.model.Playlist
-import org.hyperskill.musicplayer.model.Song.SongSelector
+import org.hyperskill.musicplayer.domain.model.Playlist
+import org.hyperskill.musicplayer.domain.model.Song.SongSelector
 
 data class UiState(
     val uiEvent: UiEvent? = null,
     val isReadyToPlayMusic: Boolean? = null,
     val playlists: Map<String, Playlist> = mapOf(),
     val currentPlaylist: Playlist = Playlist(),
+    val currentSongProgress: Int = 0,
     val songSelectors: List<SongSelector> = emptyList()
 )
 
