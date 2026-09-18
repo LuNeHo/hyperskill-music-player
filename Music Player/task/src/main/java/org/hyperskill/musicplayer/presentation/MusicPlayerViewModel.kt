@@ -23,6 +23,15 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
     private var currentPlaylistName = ""
     private var progressJob: Job? = null
 
+    init {
+        audioPlayer.setOnCompletionListener { handleIntent(UserIntent.StopSong) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopProgressTracker()
+    }
+
     fun handleIntent(intent: UserIntent) {
         when (intent) {
             UserIntent.ConsumeEvent -> updateState { copy(uiEvent = null) }
@@ -39,6 +48,10 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
                 copy(uiEvent = UiEvent.ShowDeletePlaylistDialog(playlists))
             }
 
+            UserIntent.SuspendSongProgress -> stopProgressTracker()
+
+            is UserIntent.SeekTo -> seekTo(intent.progress)
+
             is UserIntent.ClickSong -> {
                 if (_uiState.value.isReadyToPlayMusic == true) playSong(intent.position)
                 else selectSong(intent.position)
@@ -52,6 +65,7 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
             is UserIntent.AddPlaylist -> addPlaylist(intent.playlistName)
             is UserIntent.LoadPlaylist -> updateCurrentPlaylist(intent.playlistName)
             is UserIntent.DeletePlaylist -> deletePlaylist(intent.playlistName)
+            is UserIntent.UpdateProgress -> updateState { copy(currentSongProgress = intent.progress) }
         }
     }
 
@@ -104,6 +118,7 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
 
     private fun playCurrentSong() {
         _uiState.value.currentPlaylist.currentTrack?.let { currentTrack ->
+            playAudio(currentTrack.state)
             val newTrackState = when (currentTrack.state) {
                 TrackState.PLAYING -> TrackState.PAUSED
                 TrackState.PAUSED, TrackState.STOPPED -> TrackState.PLAYING
@@ -113,26 +128,34 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
             }
             val newCurrentTrack = newTracks.find { it.id == currentTrack.id }
             updateState { copy(currentPlaylist = Playlist(newTracks, newCurrentTrack)) }
-            audioPlayer.play()
-            startProgressTracker()
         }
     }
 
     private fun stopCurrentSong() {
         _uiState.value.currentPlaylist.currentTrack?.let { currentTrack ->
+            stopAudio()
             val newTracks = _uiState.value.currentPlaylist.tracks.map {
                 if (it.id == currentTrack.id) it.copy(state = TrackState.STOPPED) else it
             }
             val newCurrentTrack = newTracks.find { it.id == currentTrack.id }
             updateState { copy(currentPlaylist = Playlist(newTracks, newCurrentTrack)) }
-            audioPlayer.stop()
-            updateState { copy(currentSongProgress = audioPlayer.getCurrentPosition()) }
         }
     }
 
     private fun playSong(position: Int) {
         val selectedTrack = _uiState.value.currentPlaylist.tracks[position]
-        val newTrackState = when (selectedTrack.state) {
+        val isDifferentSong = selectedTrack.id != _uiState.value.currentPlaylist.currentTrack?.id
+
+        if (isDifferentSong) {
+            audioPlayer.stop()
+            stopProgressTracker()
+            audioPlayer.play()
+            startProgressTracker()
+        } else {
+            playAudio(selectedTrack.state)
+        }
+        val newTrackState = if (isDifferentSong) TrackState.PLAYING
+        else when (selectedTrack.state) {
             TrackState.PLAYING -> TrackState.PAUSED
             TrackState.PAUSED, TrackState.STOPPED -> TrackState.PLAYING
         }
@@ -141,22 +164,60 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
             else it.copy(state = TrackState.STOPPED)
         }
         val newCurrentTrack = newTracks.find { it.id == selectedTrack.id }
-        updateState { copy(currentPlaylist = Playlist(newTracks, newCurrentTrack)) }
+        updateState {
+            copy(
+                currentPlaylist = Playlist(newTracks, newCurrentTrack),
+                currentSongProgress = if (isDifferentSong) 0 else currentSongProgress
+            )
+        }
+    }
+
+    private fun playAudio(trackState: TrackState) {
+        when (trackState) {
+            TrackState.PLAYING -> {
+                audioPlayer.pause()
+                stopProgressTracker()
+            }
+
+            TrackState.PAUSED -> {
+                audioPlayer.resume()
+                startProgressTracker()
+            }
+
+            TrackState.STOPPED -> {
+                audioPlayer.play(_uiState.value.currentSongProgress)
+                startProgressTracker()
+            }
+        }
+    }
+
+    private fun seekTo(positionMs: Int) {
+        audioPlayer.seekTo(positionMs)
+        updateState { copy(currentSongProgress = positionMs) }
+        if (audioPlayer.isPlaying()) startProgressTracker()
+    }
+
+    private fun stopAudio() {
+        audioPlayer.stop()
+        stopProgressTracker()
         updateState { copy(currentSongProgress = 0) }
-        audioPlayer.play()
-        startProgressTracker()
     }
 
     private fun startProgressTracker() {
-        // In case a track is already playing
         progressJob?.cancel()
-
         progressJob = viewModelScope.launch {
-            while (isActive && audioPlayer.isPlaying()) {
-                updateState { copy(currentSongProgress = audioPlayer.getCurrentPosition()) }
+            while (isActive) {
                 delay(500)
+                if (audioPlayer.isPlaying()) updateState {
+                    copy(currentSongProgress = audioPlayer.getCurrentPosition())
+                }
             }
         }
+    }
+
+    private fun stopProgressTracker() {
+        progressJob?.cancel()
+        progressJob = null
     }
 
     private fun enableSelectionMode() {
@@ -189,17 +250,28 @@ class MusicPlayerViewModel(private val audioPlayer: AudioPlayerDataSource) : Vie
                 val newTracks = playlist.tracks.map {
                     if (it.id == currentTrack?.id) it.copy(state = currentTrack.state) else it
                 }
+                val isCurrentTrackStillPresent = newTracks.any { it.id == currentTrack?.id }
                 val newCurrentTrack = newTracks.find { it.id == currentTrack?.id }
                 val newPlaylist = Playlist(newTracks, newCurrentTrack ?: newTracks.first())
-                updateState { copy(currentPlaylist = newPlaylist) }
+                if (!isCurrentTrackStillPresent) {
+                    audioPlayer.stop()
+                    stopProgressTracker()
+                }
+                updateState {
+                    copy(
+                        currentPlaylist = newPlaylist,
+                        currentSongProgress = if (isCurrentTrackStillPresent) currentSongProgress else 0
+                    )
+                }
                 currentPlaylistName = playlistName
-            } else updateState {
-                val selectedSongsIds = songSelectors.filter { it.isSelected }.map { it.id }
+            } else {
+                val selectedSongsIds =
+                    _uiState.value.songSelectors.filter { it.isSelected }.map { it.id }
                 val newSongSelectors = playlist.tracks.map {
                     if (it.id in selectedSongsIds) it.toSongSelector(true)
                     else it.toSongSelector()
                 }
-                copy(songSelectors = newSongSelectors)
+                updateState { copy(songSelectors = newSongSelectors) }
             }
         }
     }

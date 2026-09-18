@@ -55,32 +55,32 @@ class MainPlayerControllerFragment : Fragment(), SeekBar.OnSeekBarChangeListener
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (fromUser) {
-            binding.controllerTvCurrentTime.text = format.format(progress.toLong())
-            selectedProgress = progress
+            binding.controllerTvCurrentTime.text = format.format(progress * 1000L)
+            selectedProgress = progress * 1000
         }
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
-//        stop actualizations of controller widgets
+        viewModel.handleIntent(UserIntent.SuspendSongProgress)
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//        viewModel.handleIntent(UserIntent.ChangeCurrentSongProgress(selectedProgress))
+        viewModel.handleIntent(UserIntent.SeekTo(selectedProgress))
     }
 
     private fun observeUIState() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state -> updatePlayerController(state) }
+                viewModel.uiState.collect { state -> renderUI(state) }
             }
         }
     }
 
-    private fun updatePlayerController(state: UiState) {
+    private fun renderUI(state: UiState) {
         val currentTrackDuration = state.currentPlaylist.currentTrack?.duration?.toInt()
         with(binding) {
-            controllerSeekBar.max = currentTrackDuration ?: 0
-            controllerSeekBar.progress = state.currentSongProgress
+            controllerSeekBar.max = (currentTrackDuration ?: 0) / 1000
+            controllerSeekBar.progress = state.currentSongProgress / 1000
             controllerTvCurrentTime.text = format.format(state.currentSongProgress.toLong())
             controllerTvTotalTime.text = format.format(currentTrackDuration?.toLong() ?: 0)
         }

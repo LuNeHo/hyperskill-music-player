@@ -89,7 +89,6 @@ class MainActivity : AppCompatActivity(), SongsAdapter.OnSongInteraction {
         var bottomController: Fragment? = null
         var tag = ""
 
-        renderEvent(state.uiEvent)
         when (state.isReadyToPlayMusic) {
             true -> {
                 songsAdapter.submitList(state.currentPlaylist.tracks)
@@ -113,6 +112,7 @@ class MainActivity : AppCompatActivity(), SongsAdapter.OnSongInteraction {
                     .commit()
             }
         }
+        renderEvent(state.uiEvent)
     }
 
     private fun renderEvent(uiEvent: UiEvent?) {
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity(), SongsAdapter.OnSongInteraction {
 
             null -> {}
         }
-        viewModel.handleIntent(UserIntent.ConsumeEvent)
+        uiEvent?.let { viewModel.handleIntent(UserIntent.ConsumeEvent) }
     }
 
     private fun getToast(toastMessage: ToastMessage): Toast {

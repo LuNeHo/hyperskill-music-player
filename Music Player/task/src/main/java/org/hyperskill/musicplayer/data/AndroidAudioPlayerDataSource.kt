@@ -5,37 +5,51 @@ import android.media.MediaPlayer
 import androidx.core.net.toUri
 import org.hyperskill.musicplayer.R
 import org.hyperskill.musicplayer.domain.AudioPlayerDataSource
+import org.hyperskill.musicplayer.presentation.UserIntent
 
 class AndroidAudioPlayerDataSource(private val context: Context) : AudioPlayerDataSource {
-    private var mediaPlayer: MediaPlayer? = null
-    private var isStopped = false
-    private val songUriStr = "android.resource://${context.packageName ?: ""}/${R.raw.wisdom}"
+    private val mediaPlayer: MediaPlayer by lazy { MediaPlayer() }
+    private var isPrepared = false
 
-    override fun play() {
-        // In case a track is already playing
-        stop()
-
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(context, songUriStr.toUri())
-            prepare()
-            start()
-            isStopped = false
-            setOnCompletionListener {
-                isStopped = true
-                release()
-            }
-        }
+    override fun play(startPositionMs: Int) {
+        initMediaPlayer()
+        if (startPositionMs > 0) seekTo(startPositionMs)
+        mediaPlayer.start()
     }
+
+    override fun seekTo(positionMs: Int) {
+        if (!isPrepared) initMediaPlayer()
+        mediaPlayer.seekTo(positionMs)
+    }
+
+    override fun pause() = mediaPlayer.pause()
+
+    override fun resume() = mediaPlayer.start()
 
     override fun stop() {
-        mediaPlayer?.let {
-            it.stop()
-            isStopped = true
-            it.release()
-            mediaPlayer = null
+        with(mediaPlayer) {
+            if (isPlaying) stop()
+            reset()
         }
+        isPrepared = false
     }
 
-    override fun getCurrentPosition(): Int = mediaPlayer?.currentPosition ?: 0
-    override fun isPlaying(): Boolean = !isStopped
+    override fun getCurrentPosition(): Int = mediaPlayer.currentPosition
+
+    override fun isPlaying(): Boolean = mediaPlayer.isPlaying
+
+    override fun setOnCompletionListener(listener: () -> Unit) {
+        mediaPlayer.setOnCompletionListener { listener() }
+    }
+
+    private fun initMediaPlayer() {
+        val songUriStr = "android.resource://${context.packageName}/${R.raw.wisdom}"
+
+        with(mediaPlayer) {
+            reset()
+            setDataSource(context, songUriStr.toUri())
+            prepare()
+        }
+        isPrepared = true
+    }
 }

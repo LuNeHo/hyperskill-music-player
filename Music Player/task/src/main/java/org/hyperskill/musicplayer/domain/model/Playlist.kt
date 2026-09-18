@@ -4,5 +4,5 @@ import org.hyperskill.musicplayer.domain.model.Song.Track
 
 data class Playlist(
     val tracks: List<Track> = emptyList(),
-    val currentTrack: Track? = null
+    val currentTrack: Track? = tracks.firstOrNull()
 )

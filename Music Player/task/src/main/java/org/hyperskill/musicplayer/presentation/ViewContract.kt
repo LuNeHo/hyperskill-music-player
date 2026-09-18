@@ -18,6 +18,8 @@ sealed interface UserIntent {
     data class AddPlaylist(val playlistName: String) : UserIntent
     data class LoadPlaylist(val playlistName: String) : UserIntent
     data class DeletePlaylist(val playlistName: String) : UserIntent
+    data class UpdateProgress(val progress: Int) : UserIntent
+    data class SeekTo(val progress: Int) : UserIntent
     data object ConsumeEvent : UserIntent
     data object Search : UserIntent
     data object PlayPauseSong : UserIntent
@@ -26,6 +28,7 @@ sealed interface UserIntent {
     data object QuitSongSelection : UserIntent
     data object DisplayLoadPlaylistOption : UserIntent
     data object DisplayDeletePlaylistOption : UserIntent
+    data object SuspendSongProgress : UserIntent
 }
 
 sealed interface UiEvent {
